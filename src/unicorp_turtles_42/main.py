@@ -5,46 +5,60 @@ from unicorp_turtles_42.input import InputManager
 from unicorp_turtles_42.loader import loader
 
 
-def run():
-    window = pyglet.window.Window(
-        caption="Unicorp Turtles 42",
-        visible=False,
-    )
-    icons = [loader().image(f"gfx/icon_{size}.png") for size in (16, 32, 48)]
-    window.set_icon(*icons)
+class MainWindow(pyglet.window.Window):
+    def __init__(self):
+        super().__init__(visible=False)
+        self._decorate()
 
-    image = loader().image("gfx/turtle.png")
-    img_x = window.width // 2 - image.width // 2
-    img_y = window.height * 2 // 3 - image.height // 2
-    label = pyglet.text.Label(
-        "Turtle",
-        font_size=36,
-        x=window.width // 2,
-        y=img_y,
-        anchor_x="center",
-        anchor_y="top",
-    )
+        input_manager = InputManager()
+        input_manager
 
-    input_manager = InputManager()
-    input_manager
+        self._image = None
+        self._image_pos = None
+        self._label = None
+        self._build()
 
-    @window.event
-    def on_key_press(symbol, modifiers):
+        self.set_visible()
+
+    def _decorate(self):
+        self.set_caption("Unicorp Turtles 42")
+        icons = [loader().image(f"gfx/icon_{size}.png") for size in (16, 32, 48)]
+        self.set_icon(*icons)
+
+    def _build(self):
+        self._image = loader().image("gfx/turtle.png")
+        img_x = self.width // 2 - self._image.width // 2
+        img_y = self.height * 2 // 3 - self._image.height // 2
+        self._image_pos = (img_x, img_y)
+
+        self._label = pyglet.text.Label(
+            "Turtle",
+            font_size=36,
+            x=self.width // 2,
+            y=img_y,
+            anchor_x="center",
+            anchor_y="top",
+        )
+
+    # Events
+    def on_key_press(self, symbol, modifiers):
         if symbol == key.Q and modifiers & key.MOD_CTRL:
             exit(0)
 
-    @window.event
-    def on_mouse_press(x, y, button, modifiers):
+    def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             print(f"click at {x:.0f}:{y:.0f}")
 
-    @window.event
-    def on_draw():
-        window.clear()
-        image.blit(img_x, img_y)
-        label.draw()
+    def on_draw(self):
+        self.clear()
+        self._image.blit(*self._image_pos)
+        self._label.draw()
 
-    window.set_visible()
+
+def run():
+    window = MainWindow()
+    window
+
     pyglet.app.run()
 
 
