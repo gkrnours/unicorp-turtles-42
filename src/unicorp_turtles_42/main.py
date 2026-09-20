@@ -6,7 +6,13 @@ from unicorp_turtles_42.loader import loader
 
 
 def run():
-    window = pyglet.window.Window(visible=False)
+    window = pyglet.window.Window(
+        caption="Unicorp Turtles 42",
+        visible=False,
+    )
+    icons = [loader().image(f"gfx/icon_{size}.png") for size in (16, 32, 48)]
+    window.set_icon(*icons)
+
     image = loader().image("gfx/turtle.png")
     img_x = window.width // 2 - image.width // 2
     img_y = window.height * 2 // 3 - image.height // 2
