@@ -1,0 +1,24 @@
+[project]
+name = "unicorp-turtles-42"
+description = "PyWeek 42 game - Borrowed Time"
+readme = "README.rst"
+version = "0.0.1"
+authors = [
+  { name="Xyolidge" },
+  { name="Ratnarchiste" },
+  { name="gkrnours" },
+]
+
+requires-python = ">=3.13"
+dependencies = [
+  "pyglet",
+]
+
+[project.urls]
+Homepage = "https://pyweek.org/e/uniturtles/"
+
+[project.scripts]
+turtle = "unicorp_turtles_42.main:run"
+
+[tool.isort]
+multi_line_output = 3
