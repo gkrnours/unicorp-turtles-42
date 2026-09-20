@@ -13,8 +13,7 @@ class MainWindow(pyglet.window.Window):
         input_manager = InputManager()
         input_manager
 
-        self._image = None
-        self._image_pos = None
+        self._turtle = None
         self._label = None
         self._build()
 
@@ -26,16 +25,18 @@ class MainWindow(pyglet.window.Window):
         self.set_icon(*icons)
 
     def _build(self):
-        self._image = loader().image("gfx/turtle.png")
-        img_x = self.width // 2 - self._image.width // 2
-        img_y = self.height * 2 // 3 - self._image.height // 2
-        self._image_pos = (img_x, img_y)
+        image = loader().image("gfx/turtle.png")
+        self._turtle = pyglet.sprite.Sprite(
+            img=image,
+            x=self.width // 2 - image.width // 2,
+            y=self.height * 2 // 3 - image.height // 2,
+        )
 
         self._label = pyglet.text.Label(
             "Turtle",
             font_size=36,
             x=self.width // 2,
-            y=img_y,
+            y=self._turtle.y,
             anchor_x="center",
             anchor_y="top",
         )
@@ -51,7 +52,7 @@ class MainWindow(pyglet.window.Window):
 
     def on_draw(self):
         self.clear()
-        self._image.blit(*self._image_pos)
+        self._turtle.draw()
         self._label.draw()
 
 
