@@ -6,7 +6,7 @@ from unicorp_turtles_42.loader import loader
 
 
 def run():
-    window = pyglet.window.Window()
+    window = pyglet.window.Window(visible=False)
     image = loader().image("gfx/turtle.png")
     img_x = window.width // 2 - image.width // 2
     img_y = window.height * 2 // 3 - image.height // 2
@@ -38,6 +38,7 @@ def run():
         image.blit(img_x, img_y)
         label.draw()
 
+    window.set_visible()
     pyglet.app.run()
 
 
