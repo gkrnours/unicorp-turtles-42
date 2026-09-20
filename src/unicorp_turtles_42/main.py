@@ -1,4 +1,5 @@
 import pyglet
+from pyglet.window import key, mouse
 
 from unicorp_turtles_42.loader import loader
 
@@ -16,6 +17,16 @@ def run():
         anchor_x="center",
         anchor_y="top",
     )
+
+    @window.event
+    def on_key_press(symbol, modifiers):
+        if symbol == key.Q and modifiers & key.MOD_CTRL:
+            exit(0)
+
+    @window.event
+    def on_mouse_press(x, y, button, modifiers):
+        if button == mouse.LEFT:
+            print(f"click at {x:.0f}:{y:.0f}")
 
     @window.event
     def on_draw():
