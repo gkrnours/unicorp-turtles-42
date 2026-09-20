@@ -1,6 +1,7 @@
 import pyglet
 from pyglet.window import key, mouse
 
+from unicorp_turtles_42.input import InputManager
 from unicorp_turtles_42.loader import loader
 
 
@@ -17,6 +18,9 @@ def run():
         anchor_x="center",
         anchor_y="top",
     )
+
+    input_manager = InputManager()
+    input_manager
 
     @window.event
     def on_key_press(symbol, modifiers):
