@@ -1,5 +1,5 @@
 [project]
-name = "unicorp-turtles-42"
+name = "unicorp_turtles_42"
 description = "PyWeek 42 game - Borrowed Time"
 readme = "README.rst"
 version = "0.0.1"
@@ -19,6 +19,16 @@ Homepage = "https://pyweek.org/e/uniturtles/"
 
 [project.scripts]
 turtle = "unicorp_turtles_42.main:run"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["gfx/*.png"]
 
 [tool.isort]
 multi_line_output = 3
