@@ -14,9 +14,17 @@ class Spawner(pyglet.event.EventDispatcher):
         self._batch = batch
         self._objects = []
         self._tags = defaultdict(list)
+        self._recent_dts = [0] * 10
 
     def update(self, dt):
-        print(f"\robjects: {len(self._objects)}, dt: {dt}", end="", flush=True)
+        self._recent_dts.append(dt)
+        self._recent_dts.pop(0)
+
+        print(
+            f"\robjects: {len(self._objects)}, dt: {sum(self._recent_dts) / 10:.4}",
+            end="",
+            flush=True,
+        )
         for obj in self._objects:
             obj.update(dt)
 
@@ -44,6 +52,14 @@ class Spawner(pyglet.event.EventDispatcher):
         self._objects.append(laser)
         self._tags["laser"].append(laser)
 
+        @laser.event
+        def on_outofbound():
+            try:
+                self._objects.remove(laser)
+                self._tags["laser"].remove(laser)
+            except:
+                pass
+
         return laser
 
 
@@ -55,6 +71,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.velocity_x, self.velocity_y = 0.0, 0.0
 
     def update(self, dt):
+        self.check_bounds()
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
 
