@@ -28,7 +28,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["gfx/*.png"]
+"*" = ["gfx/*.png", "*.txt"]
 
 [tool.isort]
 multi_line_output = 3
