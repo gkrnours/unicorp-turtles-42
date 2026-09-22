@@ -54,11 +54,9 @@ class Spawner(pyglet.event.EventDispatcher):
 
         @laser.event
         def on_outofbound():
-            try:
-                self._objects.remove(laser)
-                self._tags["laser"].remove(laser)
-            except:
-                pass
+            laser.stop()
+            self._objects.remove(laser)
+            self._tags["laser"].remove(laser)
 
         return laser
 
@@ -68,10 +66,13 @@ class PhysicalObject(pyglet.sprite.Sprite):
         super().__init__(*args, **kwargs)
 
         self._screen = screen
+        self._move = True
         self.velocity_x, self.velocity_y = 0.0, 0.0
 
     def update(self, dt):
         self.check_bounds()
+        if not self._move:
+            return
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
 
@@ -89,6 +90,13 @@ class PhysicalObject(pyglet.sprite.Sprite):
             self.dispatch_event("on_outofbound")
         elif max_y < self.y:
             self.dispatch_event("on_outofbound")
+
+    def stop(self):
+        self._move = False
+        self.velocity_x, self.velocity_y = 0, 0
+        self.visible = False
+        self.x, self.y = 0, 0
+        self.delete()
 
 
 PhysicalObject.register_event_type("on_outofbound")
