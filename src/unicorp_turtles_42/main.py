@@ -25,6 +25,11 @@ class MainWindow(pyglet.window.Window):
         self._eye_right = None
         self._eye_right_pos = None
         self._spawner = None
+
+        self._max_speed = 5
+        self._laser_volley = 1
+        self._laser_cooldown = 1 / 20
+
         self._build()
 
         self.set_visible()
@@ -94,13 +99,13 @@ class MainWindow(pyglet.window.Window):
         def pew_pew():
             s, c = choice(laser_config)
             t = Vec2(randint(0, self.width), randint(0, self.height))
-            self._spawner.laser(s, t, speed=1 + random() * 5, color=c)
+            self._spawner.laser(s, t, speed=1 + random() * self._max_speed, color=c)
 
         def do_pew_pew(dt):
-            for i in range(5):
+            for i in range(self._laser_volley):
                 pew_pew()
 
-        pyglet.clock.schedule_interval(do_pew_pew, 1 / 30)
+        pyglet.clock.schedule_interval(do_pew_pew, self._laser_cooldown)
         pew_pew()
 
     # Events
