@@ -1,8 +1,12 @@
+from random import choice, randint, random
+
 import pyglet
+from pyglet.math import Vec2
 from pyglet.window import key, mouse
 
 from unicorp_turtles_42.input import InputManager
 from unicorp_turtles_42.loader import loader
+from unicorp_turtles_42.spawner import Spawner
 
 
 class MainWindow(pyglet.window.Window):
@@ -20,6 +24,7 @@ class MainWindow(pyglet.window.Window):
         self._eye_left_pos = None
         self._eye_right = None
         self._eye_right_pos = None
+        self._spawner = None
         self._build()
 
         self.set_visible()
@@ -31,6 +36,7 @@ class MainWindow(pyglet.window.Window):
 
     def _build(self):
         self._drawing_batch = batch = pyglet.graphics.Batch()
+        self._spawner = Spawner(self, batch)
         base_group = pyglet.graphics.Group(order=0)
         front_group = pyglet.graphics.Group(order=1)
 
@@ -75,6 +81,28 @@ class MainWindow(pyglet.window.Window):
             **eyes_config,
         )
 
+        laser_config = [
+            (Vec2(30, 30), "red"),
+            (Vec2(self.width - 30, 30), "green"),
+            (Vec2(self.width - 30, self.height - 30), "gold"),
+            (Vec2(30, self.height - 30), "cyan"),
+        ]
+        self._laser_source = [
+            pyglet.shapes.Circle(*pos, **eyes_config) for pos, _c in laser_config
+        ]
+
+        def pew_pew():
+            s, c = choice(laser_config)
+            t = Vec2(randint(0, self.width), randint(0, self.height))
+            self._spawner.laser(s, t, speed=1 + random() * 5, color=c)
+
+        def do_pew_pew(dt):
+            for i in range(5):
+                pew_pew()
+
+        pyglet.clock.schedule_interval(do_pew_pew, 1 / 30)
+        pew_pew()
+
     # Events
     def on_key_press(self, symbol, modifiers):
         if symbol == key.Q and modifiers & key.MOD_CTRL:
@@ -95,12 +123,19 @@ class MainWindow(pyglet.window.Window):
         self.clear()
         self._drawing_batch.draw()
 
+    def update(self, dt):
+        self._spawner.update(dt)
+
 
 def run():
     window = MainWindow()
     window
 
-    pyglet.app.run()
+    pyglet.clock.schedule_interval(window.update, 1 / 120.0)
+    try:
+        pyglet.app.run()
+    except KeyboardInterrupt:
+        print("bye~")
 
 
 if __name__ == "__main__":
