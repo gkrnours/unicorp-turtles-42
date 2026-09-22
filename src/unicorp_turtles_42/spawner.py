@@ -28,6 +28,15 @@ class Spawner(pyglet.event.EventDispatcher):
         for obj in self._objects:
             obj.update(dt)
 
+    def do_collide(self, pos, *tags):
+        for tag in tags:
+            for item in self._tags[tag]:
+                if (
+                    item.x <= pos.x <= item.x + item.width
+                    and item.y <= pos.y <= item.y + item.height
+                ):
+                    return True
+
     @cached_property
     def laser_img(self, color=None):
         return loader().image("gfx/laser.png")

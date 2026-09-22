@@ -30,6 +30,8 @@ class MainWindow(pyglet.window.Window):
         self._laser_volley = 1
         self._laser_cooldown = 1 / 20
 
+        self._mouse_pos = Vec2(-1, -1)
+
         self._build()
 
         self.set_visible()
@@ -108,6 +110,18 @@ class MainWindow(pyglet.window.Window):
         pyglet.clock.schedule_interval(do_pew_pew, self._laser_cooldown)
         pew_pew()
 
+    def _redraw_eyes(self):
+        x, y = self._mouse_pos
+        eyes = [(-10, -12), (10, 12)]
+        delta_left = pyglet.math.Vec2(x, y) - self._eye_left_pos
+        delta_right = pyglet.math.Vec2(x, y) - self._eye_right_pos
+        self._eye_left.position = self._eye_left_pos + (delta_left / 30).clamp(*eyes)
+        self._eye_right.position = self._eye_right_pos + (delta_right / 30).clamp(*eyes)
+
+    def _check_collision(self):
+        if self._spawner.do_collide(self._mouse_pos, "laser"):
+            exit(0)
+
     # Events
     def on_key_press(self, symbol, modifiers):
         if symbol == key.Q and modifiers & key.MOD_CTRL:
@@ -117,18 +131,19 @@ class MainWindow(pyglet.window.Window):
         if button == mouse.LEFT:
             print(f"click at {x:.0f}:{y:.0f}")
 
+    def on_mouse_ender(self, x, y):
+        self._mouse_pos = Vec2(x, y)
+
     def on_mouse_motion(self, x, y, dx, dy):
-        eyes = [(-10, -12), (10, 12)]
-        delta_left = pyglet.math.Vec2(x, y) - self._eye_left_pos
-        delta_right = pyglet.math.Vec2(x, y) - self._eye_right_pos
-        self._eye_left.position = self._eye_left_pos + (delta_left / 30).clamp(*eyes)
-        self._eye_right.position = self._eye_right_pos + (delta_right / 30).clamp(*eyes)
+        self._mouse_pos = Vec2(x, y)
 
     def on_draw(self):
         self.clear()
         self._drawing_batch.draw()
 
     def update(self, dt):
+        self._redraw_eyes()
+        self._check_collision()
         self._spawner.update(dt)
 
 
