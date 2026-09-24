@@ -2,7 +2,7 @@
 name = "unicorp_turtles_42"
 description = "PyWeek 42 game - Borrowed Time"
 readme = "README.rst"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Xyolidge" },
   { name="Ratnarchiste" },
