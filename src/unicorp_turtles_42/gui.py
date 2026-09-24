@@ -70,8 +70,9 @@ class GUI(pyglet.event.EventDispatcher):
 
         self._fps = pyglet.window.FPSDisplay(self._screen)
         self._fps.label.anchor_y = "top"
-        self._fps.label.x = 0
+        self._fps.label.x = 5
         self._fps.label.y = self.height
+        self._fps.label.color = colors()["lilac"]
 
     def draw(self):
         self._drawing_batch.draw()
