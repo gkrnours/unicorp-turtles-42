@@ -2,6 +2,7 @@ import pyglet
 from pyglet.window import key, mouse
 
 from unicorp_turtles_42.game import PlayArea
+from unicorp_turtles_42.gui import GUI
 from unicorp_turtles_42.input import InputManager
 from unicorp_turtles_42.loader import loader
 
@@ -16,6 +17,7 @@ class MainWindow(pyglet.window.Window):
         input_manager
 
         self._play_area = PlayArea(self)
+        self._gui = GUI(self)
 
         self.set_visible()
 
@@ -26,6 +28,7 @@ class MainWindow(pyglet.window.Window):
 
     def update(self, dt):
         self._play_area.update(dt)
+        self._gui.update(dt)
 
     # Events
     def on_key_press(self, symbol, modifiers):
@@ -45,6 +48,7 @@ class MainWindow(pyglet.window.Window):
     def on_draw(self):
         self.clear()
         self._play_area.draw()
+        self._gui.draw()
 
 
 def run():

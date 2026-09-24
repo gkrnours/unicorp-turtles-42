@@ -44,8 +44,8 @@ class PlayArea(pyglet.event.EventDispatcher):
         laser_source_config = [
             (Vec2(30, 30), "red"),
             (Vec2(self.width - 30, 30), "green"),
-            (Vec2(self.width - 30, self.height - 30), "gold"),
-            (Vec2(30, self.height - 30), "cyan"),
+            (Vec2(self.width - 30, self.height - 90), "gold"),
+            (Vec2(30, self.height - 90), "cyan"),
         ]
         self._laser_source = [
             pyglet.shapes.Circle(*pos, **laser_source_circle_config)
