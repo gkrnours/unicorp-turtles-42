@@ -104,7 +104,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self._move = False
         self.velocity_x, self.velocity_y = 0, 0
         self.visible = False
-        self.x, self.y = self._screen.x, self._screen.y
+        self.x, self.y = 0, 0
         self.delete()
 
 

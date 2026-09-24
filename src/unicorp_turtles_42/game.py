@@ -3,7 +3,7 @@ from random import choice, randint, random
 import pyglet
 from pyglet.math import Vec2
 
-from unicorp_turtles_42.loader import colors, loader
+from unicorp_turtles_42.loader import colors
 from unicorp_turtles_42.spawner import Spawner
 
 
@@ -15,9 +15,7 @@ class PlayArea(pyglet.event.EventDispatcher):
 
         self._screen = screen
         self.width = screen.width
-        self.height = screen.height - 30
-        self.x = 0
-        self.y = 30
+        self.height = screen.height
 
         self._spawner = None
         self._drawing_batch = None
@@ -31,13 +29,6 @@ class PlayArea(pyglet.event.EventDispatcher):
 
         self._build()
 
-    def lvec2(self, x, y):
-        if x < 0:
-            x = self.width + x
-        if y < 0:
-            y = self.height + y
-        return Vec2(self.x + x, self.y + y)
-
     def _build(self):
         self._drawing_batch = batch = pyglet.graphics.Batch()
         self._spawner = Spawner(self, batch)
@@ -46,15 +37,15 @@ class PlayArea(pyglet.event.EventDispatcher):
 
         laser_source_circle_config = {
             "radius": 5,
-            "color": (0xFF, 0xFF, 0xFF),
+            "color": colors()["white"],
             "batch": batch,
             "group": base_group,
         }
         laser_source_config = [
-            (self.lvec2(30, 30), "red"),
-            (self.lvec2(-30, 30), "green"),
-            (self.lvec2(-30, -30), "gold"),
-            (self.lvec2(30, -30), "cyan"),
+            (Vec2(30, 30), "red"),
+            (Vec2(self.width - 30, 30), "green"),
+            (Vec2(self.width - 30, self.height - 30), "gold"),
+            (Vec2(30, self.height - 30), "cyan"),
         ]
         self._laser_source = [
             pyglet.shapes.Circle(*pos, **laser_source_circle_config)
@@ -63,7 +54,7 @@ class PlayArea(pyglet.event.EventDispatcher):
 
         def pew_pew():
             s, c = choice(laser_source_config)
-            t = self.lvec2(randint(0, self.width), randint(0, self.height))
+            t = Vec2(randint(0, self.width), randint(0, self.height))
             self._spawner.laser(s, t, speed=1 + random() * self._max_speed, color=c)
 
         def do_pew_pew(dt):
