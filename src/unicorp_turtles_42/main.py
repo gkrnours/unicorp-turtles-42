@@ -6,18 +6,34 @@ from unicorp_turtles_42.gui import GUI
 from unicorp_turtles_42.input import InputManager
 from unicorp_turtles_42.loader import loader
 
+MOVE_DELTAS = [
+    ("UP", pyglet.math.Vec2(0, 1)),
+    ("DOWN", pyglet.math.Vec2(0, -1)),
+    ("LEFT", pyglet.math.Vec2(-1, 0)),
+    ("RIGHT", pyglet.math.Vec2(1, 0)),
+]
+
 
 class MainWindow(pyglet.window.Window):
     def __init__(self):
         super().__init__(visible=False)
 
         self._decorate()
+        self.set_exclusive_mouse()
+        self.set_fullscreen()
 
         input_manager = InputManager()
         input_manager
 
         self._play_area = PlayArea(self)
         self._gui = GUI(self)
+        self._dvec = pyglet.math.Vec2(0, 0)
+        self._keys = {
+            "UP": key.W,
+            "DOWN": key.S,
+            "LEFT": key.A,
+            "RIGHT": key.D,
+        }
 
         self.set_visible()
 
@@ -34,16 +50,24 @@ class MainWindow(pyglet.window.Window):
     def on_key_press(self, symbol, modifiers):
         if symbol == key.Q and modifiers & key.MOD_CTRL:
             exit(0)
+        for k, delta in MOVE_DELTAS:
+            if symbol == self._keys[k]:
+                self._dvec += delta
+        self._play_area.set_direction(self._dvec)
+
+    def on_key_release(self, symbol, modifiers):
+        for k, delta in MOVE_DELTAS:
+            if symbol == self._keys[k]:
+                self._dvec -= delta
+        self._play_area.set_direction(self._dvec)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             print(f"click at {x:.0f}:{y:.0f}")
 
-    def on_mouse_enter(self, x, y):
-        self._play_area.set_mouse(x, y)
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        self._play_area.set_mouse(x, y)
+    # mouse motion don't fire when mouse stop
+    # def on_mouse_motion(self, x, y, dx, dy):
+    #     self._play_area.move_mouse(dx, dy)
 
     def on_draw(self):
         self.clear()

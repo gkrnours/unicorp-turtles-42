@@ -3,37 +3,61 @@ from random import choice, randint, random
 import pyglet
 from pyglet.math import Vec2
 
-from unicorp_turtles_42.loader import colors
+from unicorp_turtles_42.loader import colors, loader
 from unicorp_turtles_42.spawner import Spawner
+
+
+class Ship(pyglet.sprite.Sprite):
+    def __init__(self, screen, *args, **kwargs):
+        img = loader().image("gfx/ship.png")
+        super().__init__(
+            *args,
+            img=img,
+            x=screen.width // 2 - img.width // 2,
+            y=screen.height // 2 - img.height // 2,
+            **kwargs,
+        )
+        self.anchor_x = 128
+        self.anchor_y = 129
+        self._direction = Vec2(0, 0)
+        self._velocity = 90
+
+    def set_direction(self, vector):
+        self._direction = vector.normalize()
+
+    def update(self, dt):
+        new_pos = Vec2(self.x, self.y) + self._direction * self._velocity * dt
+        self.x, self.y = new_pos
 
 
 class PlayArea(pyglet.event.EventDispatcher):
     def __init__(self, screen):
-        self._max_speed = 5
+        self._max_speed = 6
         self._laser_volley = 1
-        self._laser_cooldown = 1 / 20
+        self._laser_cooldown = 1 / 10
 
         self._screen = screen
         self.width = screen.width
         self.height = screen.height
 
         self._spawner = None
-        self._drawing_batch = None
-        self._turtle = None
-        self._label = None
-        self._eye_left = None
-        self._eye_left_pos = None
-        self._eye_right = None
-        self._eye_right_pos = None
-        self._mouse_pos = Vec2(-1, -1)
+        self._drawing_batch = pyglet.graphics.Batch()
+        self._ship = None
+        self._mouse_pos = Vec2(self.width // 2, self.height // 2)
 
         self._build()
 
     def _build(self):
-        self._drawing_batch = batch = pyglet.graphics.Batch()
+        batch = self._drawing_batch
         self._spawner = Spawner(self, batch)
         base_group = pyglet.graphics.Group(order=0)
-        front_group = pyglet.graphics.Group(order=1)
+        ship_group = pyglet.graphics.Group(order=1)
+
+        self._ship = Ship(
+            screen=self,
+            batch=batch,
+            group=ship_group,
+        )
 
         laser_source_circle_config = {
             "radius": 5,
@@ -65,7 +89,7 @@ class PlayArea(pyglet.event.EventDispatcher):
         pew_pew()
 
     def _check_collision(self):
-        if self._spawner.do_collide(self._mouse_pos, "laser"):
+        if self._spawner.do_collide(Vec2(self._ship.x, self._ship.y), "laser"):
             exit(0)
 
     def draw(self):
@@ -74,6 +98,11 @@ class PlayArea(pyglet.event.EventDispatcher):
     def update(self, dt):
         self._check_collision()
         self._spawner.update(dt)
+        self._ship.update(dt)
 
-    def set_mouse(self, x, y):
-        self._mouse_pos = Vec2(x, y)
+    def move_mouse(self, dx, dy):
+        self._mouse_pos += Vec2(dx, dy)
+        self._ship.set_direction(Vec2(dx, dy))
+
+    def set_direction(self, vector):
+        self._ship.set_direction(vector)

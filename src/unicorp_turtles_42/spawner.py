@@ -20,11 +20,13 @@ class Spawner(pyglet.event.EventDispatcher):
         self._recent_dts.append(dt)
         self._recent_dts.pop(0)
 
-        print(
-            f"\robjects: {len(self._objects)}, dt: {sum(self._recent_dts) / 10:.4}",
-            end="",
-            flush=True,
-        )
+        # debug statement
+        if False:
+            print(
+                f"\robjects: {len(self._objects)}, dt: {sum(self._recent_dts) / 10:.4}",
+                end="",
+                flush=True,
+            )
         for obj in self._objects:
             obj.update(dt)
 
