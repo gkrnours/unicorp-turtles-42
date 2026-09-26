@@ -84,13 +84,12 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self._hits = None
 
     def init_hit(self):
-        self._hits = [
-            pyglet.shapes.Circle(self.x, self.y, 3, color=(255, 0, 0), batch=self.batch)
-            for i in range(4)
-        ]
+        self._hitpoint = pyglet.math.Vec2(self.x, self.y)
         w, h = self._texture.width, self._texture.height
-        offset_dir = [(-1, 1), (1, 1), (1, -1), (-1, -1)]
-        self._h_offset = [pyglet.math.Vec2(w / 2 * a, h / 2 * b) for a, b in offset_dir]
+        self._hit_offset = pyglet.math.Vec2(
+            +self.anchor_x / 2 + w * 2 / 3 - 2,
+            -self.anchor_y / 2 - h * 1 / 3 + 2,
+        )
 
     def __contains__(self, other):
         if self._removed:
@@ -102,14 +101,11 @@ class PhysicalObject(pyglet.sprite.Sprite):
                 and self.y <= y <= self.y + self.height
             ):
                 return True
+        elif hitzone := getattr(other, "hitzone", None):
+            return self._hitpoint in hitzone
         else:
-            rect = pyglet.shapes.Rectangle(
-                self.width,
-                self.height,
-                self.width,
-                self.height,
-            )
-            rect.rotation = self.rotation
+            print(other)
+            print("oops")
 
         return False
 
@@ -121,12 +117,12 @@ class PhysicalObject(pyglet.sprite.Sprite):
             return
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
-        for i, o in enumerate(self._h_offset):
-            o = o + pyglet.math.Vec2(self.anchor_x, -self.anchor_y)
-            offset = pyglet.math.Vec2.from_heading(
-                math.radians(-self.rotation) + o.heading(), o.length()
-            )
-            self._hits[i].position = self.position + offset
+
+        offset = pyglet.math.Vec2.from_heading(
+            math.radians(-self.rotation) + self._hit_offset.heading(),
+            self._hit_offset.length(),
+        )
+        self._hitpoint = self.position + offset
 
     def check_bounds(self):
         if self._removed:
