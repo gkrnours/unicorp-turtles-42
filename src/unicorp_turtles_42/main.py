@@ -20,7 +20,7 @@ class MainWindow(pyglet.window.Window):
 
         self._decorate()
         self.set_exclusive_mouse()
-        # self.set_fullscreen()
+        self.set_fullscreen()
 
         if False:
             input_manager = InputManager()
