@@ -38,6 +38,10 @@ class MainWindow(pyglet.window.Window):
         }
 
         self._play_area.push_handlers(self.on_hit)
+        self._media = pyglet.media.Player()
+        self._media.queue(loader().media("sfx/TurtlePyWeek.wav"))
+        self._media.play()
+        self._media.loop = True
 
         self.set_visible()
 
