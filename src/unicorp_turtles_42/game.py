@@ -1,4 +1,4 @@
-from random import choice, randint, random
+from random import randint
 
 import pyglet
 from pyglet.math import Vec2
@@ -67,12 +67,21 @@ class Ship(pyglet.sprite.Sprite):
         pyglet.clock.unschedule(self.do_fire)
 
     def do_fire(self, dt):
+        self._do_fire(Vec2(0, 0))
+        for i in range(self._clone_count):
+            self._do_fire(self._clone_offset[i])
+
+    def _do_fire(self, o):
         jitter = randint(-6, 6)
-        source = self.position + self._laser_source_left * self.scale + Vec2(jitter, 0)
+        source = (
+            o + self.position + self._laser_source_left * self.scale + Vec2(jitter, 0)
+        )
         target = source + Vec2(0, 10)
         self._spawner.laser(source, target, color="pink", speed=10, tag="me")
         jitter = randint(-6, 6)
-        source = self.position + self._laser_source_right * self.scale + Vec2(jitter, 0)
+        source = (
+            o + self.position + self._laser_source_right * self.scale + Vec2(jitter, 0)
+        )
         target = source + Vec2(0, 10)
         self._spawner.laser(source, target, color="pink", speed=10, tag="me")
 
