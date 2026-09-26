@@ -3,6 +3,7 @@ from random import choice, randint, random
 import pyglet
 from pyglet.math import Vec2
 
+from unicorp_turtles_42.boss import Boss
 from unicorp_turtles_42.loader import colors, loader
 from unicorp_turtles_42.spawner import Spawner
 
@@ -78,6 +79,7 @@ class PlayArea(pyglet.event.EventDispatcher):
         self._spawner = None
         self._drawing_batch = pyglet.graphics.Batch()
         self._ship = None
+        self._boss = None
         self._mouse_pos = Vec2(self.width // 2, self.height // 2)
 
         self._build()
@@ -91,6 +93,14 @@ class PlayArea(pyglet.event.EventDispatcher):
         self._ship = Ship(
             screen=self,
             spawner=self._spawner,
+            batch=batch,
+            group=ship_group,
+        )
+        self._boss = Boss(
+            loader().image("gfx/boss.png"),
+            x=0,
+            y=0,
+            screen=self,
             batch=batch,
             group=ship_group,
         )
@@ -136,6 +146,7 @@ class PlayArea(pyglet.event.EventDispatcher):
         self._check_collision()
         self._spawner.update(dt)
         self._ship.update(dt)
+        self._boss.update(dt)
 
     def move_mouse(self, dx, dy):
         self._mouse_pos += Vec2(dx, dy)
