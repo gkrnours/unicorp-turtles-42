@@ -90,7 +90,6 @@ class GUI(pyglet.event.EventDispatcher):
 
     @boss_hp.setter
     def boss_hp(self, value):
-        print(value)
         self._boss_hp = value
         self._boss_hp_bar.width = (self._screen.width - 320) * value
 

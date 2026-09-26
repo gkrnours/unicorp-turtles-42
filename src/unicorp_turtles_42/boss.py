@@ -14,10 +14,10 @@ class BadPaternException(Exception): ...
 class Boss(pyglet.sprite.Sprite):
     def __init__(self, img, x, y, *args, screen, spawner, **kwargs):
         x = screen.width / 2 - img.width / 2
-        y = screen.height * 4 / 5
+        y = screen.height * 7 / 10
 
         super().__init__(img, x, y, *args, **kwargs)
-        self.scale = 1 / 2
+        self.scale = 1 / 3
         self.max_hp = 10**4
         self.current_hp = self.max_hp
         self.hp = 1
@@ -39,11 +39,12 @@ class Boss(pyglet.sprite.Sprite):
             "GOTO 50% 10",
         ]
         self.hitzone = pyglet.shapes.Rectangle(
-            self.x,
-            self.y,
-            self.width,
+            self.x + self.width * 0.2,
+            self.y + 30,
+            self.width * 0.58,
             self.height,
-            color=(255, 0, 0),
+            color=(255, 0, 0, 0x30),
+            # batch=self.batch,
         )
         self.hitzone.opacity = 128
 
@@ -61,8 +62,8 @@ class Boss(pyglet.sprite.Sprite):
         self.x += move.x
         self.y += move.y
 
-        self.hitzone.x = self.x
-        self.hitzone.y = self.y
+        self.hitzone.x = self.x + self.width * 0.15
+        self.hitzone.y = self.y + 30
 
     def hit(self):
         self.current_hp -= 1
@@ -72,8 +73,9 @@ class Boss(pyglet.sprite.Sprite):
             self.delete()
 
     def _pew_pew(self, dt):
-        src = Vec2(self.x, self.y)
-        tgt = Vec2(self.x, self.y - 1)
+        x = self.x + self.width / 2
+        src = Vec2(x, self.y)
+        tgt = Vec2(x, self.y - 1)
         speed = 2 + random() * self._max_laser_speed
         self._spawner.laser(src, tgt, speed=speed, color="lime")
 
