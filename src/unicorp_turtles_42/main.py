@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pyglet
 from pyglet.window import key, mouse
 
@@ -6,12 +9,12 @@ from unicorp_turtles_42.gui import GUI
 from unicorp_turtles_42.input import InputManager
 from unicorp_turtles_42.loader import loader
 
-INPUT_CONFIG = {
-    "UP": [key.W, key.UP],
-    "DOWN": [key.S, key.DOWN],
-    "LEFT": [key.A, key.LEFT],
-    "RIGHT": [key.D, key.RIGHT],
-    "FIRE": [key.SPACE],
+CONFIG_DEFAULT = {
+    "UP": ["W", "UP"],
+    "DOWN": ["S", "DOWN"],
+    "LEFT": ["A", "LEFT"],
+    "RIGHT": ["D", "RIGHT"],
+    "FIRE": ["SPACE"],
 }
 
 MOVE_DELTAS = [
@@ -20,6 +23,19 @@ MOVE_DELTAS = [
     ("LEFT", pyglet.math.Vec2(-1, 0)),
     ("RIGHT", pyglet.math.Vec2(1, 0)),
 ]
+
+
+def load_config():
+    config_path = Path(pyglet.resource.get_settings_path(__package__)) / "config.json"
+    if not config_path.exists():
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(config_path, "w") as f:
+            json.dump(CONFIG_DEFAULT, f, indent=4)
+    with open(config_path) as f:
+        config = json.load(f)
+    return {
+        event: [getattr(key, v) for v in values] for event, values in config.items()
+    }
 
 
 class MainWindow(pyglet.window.Window):
@@ -37,7 +53,7 @@ class MainWindow(pyglet.window.Window):
         self._play_area = PlayArea(self)
         self._gui = GUI(self)
         self._dvec = pyglet.math.Vec2(0, 0)
-        self._keys = INPUT_CONFIG
+        self._keys = load_config()
 
         self._play_area.push_handlers(self.on_hit)
         self._media = pyglet.media.Player()
