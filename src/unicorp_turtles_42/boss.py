@@ -18,6 +18,9 @@ class Boss(pyglet.sprite.Sprite):
 
         super().__init__(img, x, y, *args, **kwargs)
         self.scale = 1 / 2
+        self.max_hp = 10**4
+        self.current_hp = self.max_hp
+        self.hp = 1
 
         self._screen = screen
         self._spawner = spawner
@@ -35,6 +38,14 @@ class Boss(pyglet.sprite.Sprite):
             "SHOOT 1 / 1",
             "GOTO 50% 10",
         ]
+        self.hitzone = pyglet.shapes.Rectangle(
+            self.x,
+            self.y,
+            self.width,
+            self.height,
+            color=(255, 0, 0),
+        )
+        self.hitzone.opacity = 128
 
     def update(self, dt):
         current_pattern = self._pattern[self._pattern_pointer]
@@ -49,6 +60,16 @@ class Boss(pyglet.sprite.Sprite):
             return
         self.x += move.x
         self.y += move.y
+
+        self.hitzone.x = self.x
+        self.hitzone.y = self.y
+
+    def hit(self):
+        self.current_hp -= 1
+        self.hp = self.current_hp / self.max_hp
+
+        if self.current_hp <= 0:
+            self.delete()
 
     def _pew_pew(self, dt):
         src = Vec2(self.x, self.y)

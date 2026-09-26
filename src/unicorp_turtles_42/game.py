@@ -185,6 +185,10 @@ class PlayArea(pyglet.event.EventDispatcher):
         if laser := self._spawner.do_collide(self._ship, "laser:other"):
             laser.stop()
             self.dispatch_event("on_hit")
+        while laser := self._spawner.do_collide(self._boss, "laser:me"):
+            laser.stop()
+            self._boss.hit()
+            self.dispatch_event("on_hit_boss", self._boss.hp)
 
     def draw(self):
         self._drawing_batch.draw()
@@ -216,3 +220,4 @@ class PlayArea(pyglet.event.EventDispatcher):
 
 
 PlayArea.register_event_type("on_hit")
+PlayArea.register_event_type("on_hit_boss")

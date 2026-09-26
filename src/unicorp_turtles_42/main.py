@@ -58,6 +58,7 @@ class MainWindow(pyglet.window.Window):
         self._keys = load_config()
 
         self._play_area.push_handlers(self.on_hit)
+        self._play_area.push_handlers(self.on_hit_boss)
         self._media = pyglet.media.Player()
         self._media.queue(loader().media("sfx/TurtlePyWeek.wav"))
         self._media.play()
@@ -112,6 +113,9 @@ class MainWindow(pyglet.window.Window):
 
     def on_hit(self):
         self._gui.hit_count += 1
+
+    def on_hit_boss(self, boss_hp):
+        self._gui.boss_hp = boss_hp
 
 
 def run():

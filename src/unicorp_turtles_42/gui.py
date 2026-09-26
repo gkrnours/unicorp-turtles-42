@@ -73,14 +73,26 @@ class GUI(pyglet.event.EventDispatcher):
         self.height = screen.height
 
         self._hit_count = 0
+        self._boss_hp = 1
 
         self._drawing_batch = None
         self._parts = None
+        self._boss_hp_bar = None
         self._sprites = None
         self._fps = None
         self._hit = None
 
         self._build()
+
+    @property
+    def boss_hp(self):
+        return self._boss_hp
+
+    @boss_hp.setter
+    def boss_hp(self, value):
+        print(value)
+        self._boss_hp = value
+        self._boss_hp_bar.width = (self._screen.width - 320) * value
 
     @property
     def hit_count(self):
@@ -117,6 +129,38 @@ class GUI(pyglet.event.EventDispatcher):
                 key: getattr(self._fps.label, key)
                 for key in "font_name font_size color weight".split()
             },
+        )
+
+        self._parts.append(
+            pyglet.shapes.Rectangle(
+                x=158,
+                y=self._screen.height - 22,
+                width=(self._screen.width - 316),
+                height=22,
+                color=colors()["ochre"],
+                batch=batch,
+                group=group,
+            )
+        )
+        self._parts.append(
+            pyglet.shapes.Rectangle(
+                x=160,
+                y=self._screen.height - 18,
+                width=(self._screen.width - 320),
+                height=18,
+                color=colors()["navy"],
+                batch=batch,
+                group=group,
+            )
+        )
+        self._boss_hp_bar = pyglet.shapes.Rectangle(
+            x=160,
+            y=self._screen.height - 20,
+            width=(self._screen.width - 320),
+            height=18,
+            color=colors()["red"],
+            batch=batch,
+            group=group,
         )
 
     def draw(self):
