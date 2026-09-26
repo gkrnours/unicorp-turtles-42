@@ -41,7 +41,7 @@ class Spawner(pyglet.event.EventDispatcher):
     def laser_img(self, color=None):
         return loader().image("gfx/laser.png", rotate=90)
 
-    def laser(self, origin, target, color="red", speed=1, group=None):
+    def laser(self, origin, target, color="red", speed=1, tag="other", group=None):
         if group is None:
             group = pyglet.graphics.Group(7)
         v = target - origin
@@ -58,9 +58,10 @@ class Spawner(pyglet.event.EventDispatcher):
         laser.anchor_y = self.laser_img.height // 2
         laser.velocity_x, laser.velocity_y = v.normalize() * 40 * speed
         laser.rotation = -math.degrees(v.heading())
+        laser.tag = tag
         laser.init_hit()
         self._objects.append(laser)
-        self._tags["laser"].append(laser)
+        self._tags[f"laser:{tag}"].append(laser)
 
         @laser.event
         def on_outofbound():
@@ -69,7 +70,7 @@ class Spawner(pyglet.event.EventDispatcher):
         @laser.event
         def on_remove():
             self._objects.remove(laser)
-            self._tags["laser"].remove(laser)
+            self._tags[f"laser:{laser.tag}"].remove(laser)
 
         return laser
 

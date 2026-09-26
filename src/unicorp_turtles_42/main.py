@@ -30,10 +30,11 @@ class MainWindow(pyglet.window.Window):
         self._gui = GUI(self)
         self._dvec = pyglet.math.Vec2(0, 0)
         self._keys = {
-            "UP": key.W,
-            "DOWN": key.S,
-            "LEFT": key.A,
-            "RIGHT": key.D,
+            "UP": [key.W, key.UP],
+            "DOWN": [key.S, key.DOWN],
+            "LEFT": [key.A, key.LEFT],
+            "RIGHT": [key.D, key.RIGHT],
+            "FIRE": [key.SPACE],
         }
 
         self._play_area.push_handlers(self.on_hit)
@@ -54,14 +55,18 @@ class MainWindow(pyglet.window.Window):
         if symbol == key.Q and modifiers & key.MOD_CTRL:
             exit(0)
         for k, delta in MOVE_DELTAS:
-            if symbol == self._keys[k]:
+            if symbol in self._keys[k]:
                 self._dvec += delta
+        if symbol in self._keys["FIRE"]:
+            self._play_area.start_firing()
         self._play_area.set_direction(self._dvec)
 
     def on_key_release(self, symbol, modifiers):
         for k, delta in MOVE_DELTAS:
-            if symbol == self._keys[k]:
+            if symbol in self._keys[k]:
                 self._dvec -= delta
+        if symbol in self._keys["FIRE"]:
+            self._play_area.stop_firing()
         self._play_area.set_direction(self._dvec)
 
     def on_mouse_press(self, x, y, button, modifiers):

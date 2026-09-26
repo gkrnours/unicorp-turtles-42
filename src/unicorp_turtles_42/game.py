@@ -8,7 +8,7 @@ from unicorp_turtles_42.spawner import Spawner
 
 
 class Ship(pyglet.sprite.Sprite):
-    def __init__(self, screen, *args, **kwargs):
+    def __init__(self, screen, spawner, *args, **kwargs):
         img = loader().image("gfx/ship.png")
         super().__init__(
             *args,
@@ -22,6 +22,7 @@ class Ship(pyglet.sprite.Sprite):
         self._direction = Vec2(0, 0)
         self._velocity = 40 * 6
         self.scale = 1 / 2
+
         self._hitzone_offset = Vec2(
             self.anchor_x * self.scale,
             self.anchor_y * self.scale,
@@ -32,22 +33,36 @@ class Ship(pyglet.sprite.Sprite):
             75 * self.scale,
             98 * self.scale,
             color=colors()["red"],
-            batch=kwargs["batch"],
-            group=pyglet.graphics.Group(order=5),
         )
-        self.hitzone.opacity = 128
+        self.hitzone.opacity = 0x10
+
+        self._spawner = spawner
+        self._laser_source_left = Vec2(38, 180)
+        self._laser_source_right = Vec2(201, 180)
 
     def set_direction(self, vector):
         self._direction = vector.normalize()
+
+    def start_firing(self):
+        pyglet.clock.schedule_interval(self.do_fire, 1 / 7)
+
+    def stop_firing(self):
+        pyglet.clock.unschedule(self.do_fire)
+
+    def do_fire(self, dt):
+        jitter = randint(-6, 6)
+        source = self.position + self._laser_source_left * self.scale + Vec2(jitter, 0)
+        target = source + Vec2(0, 10)
+        self._spawner.laser(source, target, color="pink", speed=10, tag="me")
+        jitter = randint(-6, 6)
+        source = self.position + self._laser_source_right * self.scale + Vec2(jitter, 0)
+        target = source + Vec2(0, 10)
+        self._spawner.laser(source, target, color="pink", speed=10, tag="me")
 
     def update(self, dt):
         new_pos = Vec2(self.x, self.y) + self._direction * self._velocity * dt
         self.x, self.y = new_pos
         self.hitzone.position = new_pos + self._hitzone_offset
-
-    def draw(self):
-        super().draw()
-        self.hitzone.draw()
 
 
 class PlayArea(pyglet.event.EventDispatcher):
@@ -75,6 +90,7 @@ class PlayArea(pyglet.event.EventDispatcher):
 
         self._ship = Ship(
             screen=self,
+            spawner=self._spawner,
             batch=batch,
             group=ship_group,
         )
@@ -109,7 +125,7 @@ class PlayArea(pyglet.event.EventDispatcher):
         pew_pew()
 
     def _check_collision(self):
-        if laser := self._spawner.do_collide(self._ship, "laser"):
+        if laser := self._spawner.do_collide(self._ship, "laser:other"):
             laser.stop()
             self.dispatch_event("on_hit")
 
@@ -127,6 +143,12 @@ class PlayArea(pyglet.event.EventDispatcher):
 
     def set_direction(self, vector):
         self._ship.set_direction(vector)
+
+    def start_firing(self):
+        self._ship.start_firing()
+
+    def stop_firing(self):
+        self._ship.stop_firing()
 
 
 PlayArea.register_event_type("on_hit")
