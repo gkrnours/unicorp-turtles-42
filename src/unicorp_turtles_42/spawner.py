@@ -1,3 +1,4 @@
+import itertools
 import math
 from collections import defaultdict
 from functools import cached_property
@@ -30,18 +31,15 @@ class Spawner(pyglet.event.EventDispatcher):
         for obj in self._objects:
             obj.update(dt)
 
-    def do_collide(self, pos, *tags):
+    def do_collide(self, obj, *tags):
         for tag in tags:
             for item in self._tags[tag]:
-                if (
-                    item.x <= pos.x <= item.x + item.width
-                    and item.y <= pos.y <= item.y + item.height
-                ):
-                    return True
+                if obj in item:
+                    return item
 
     @cached_property
     def laser_img(self, color=None):
-        return loader().image("gfx/laser.png")
+        return loader().image("gfx/laser.png", rotate=90)
 
     def laser(self, origin, target, color="red", speed=1, group=None):
         if group is None:
@@ -59,13 +57,17 @@ class Spawner(pyglet.event.EventDispatcher):
         laser.anchor_x = self.laser_img.width // 2
         laser.anchor_y = self.laser_img.height // 2
         laser.velocity_x, laser.velocity_y = v.normalize() * 40 * speed
-        laser.rotation = 90 - math.degrees(v.heading())
+        laser.rotation = -math.degrees(v.heading())
+        laser.init_hit()
         self._objects.append(laser)
         self._tags["laser"].append(laser)
 
         @laser.event
         def on_outofbound():
             laser.stop()
+
+        @laser.event
+        def on_remove():
             self._objects.remove(laser)
             self._tags["laser"].remove(laser)
 
@@ -77,17 +79,58 @@ class PhysicalObject(pyglet.sprite.Sprite):
         super().__init__(*args, **kwargs)
 
         self._screen = screen
-        self._move = True
+        self._removed = False
         self.velocity_x, self.velocity_y = 0.0, 0.0
+        self._hits = None
+
+    def init_hit(self):
+        self._hits = [
+            pyglet.shapes.Circle(self.x, self.y, 3, color=(255, 0, 0), batch=self.batch)
+            for i in range(4)
+        ]
+        w, h = self._texture.width, self._texture.height
+        offset_dir = [(-1, 1), (1, 1), (1, -1), (-1, -1)]
+        self._h_offset = [pyglet.math.Vec2(w / 2 * a, h / 2 * b) for a, b in offset_dir]
+
+    def __contains__(self, other):
+        if self._removed:
+            return False
+        if isinstance(other, tuple):
+            x, y = other
+            if (
+                self.x <= x <= self.x + self.width
+                and self.y <= y <= self.y + self.height
+            ):
+                return True
+        else:
+            rect = pyglet.shapes.Rectangle(
+                self.width,
+                self.height,
+                self.width,
+                self.height,
+            )
+            rect.rotation = self.rotation
+
+        return False
 
     def update(self, dt):
+        if self._removed:
+            return
         self.check_bounds()
-        if not self._move:
+        if self._removed:
             return
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
+        for i, o in enumerate(self._h_offset):
+            o = o + pyglet.math.Vec2(self.anchor_x, -self.anchor_y)
+            offset = pyglet.math.Vec2.from_heading(
+                math.radians(-self.rotation) + o.heading(), o.length()
+            )
+            self._hits[i].position = self.position + offset
 
     def check_bounds(self):
+        if self._removed:
+            return
         min_x = -self.image.width / 2
         min_y = -self.image.height / 2
         max_x = self._screen.width + self.image.width / 2
@@ -95,15 +138,20 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         if self.x < min_x:
             self.dispatch_event("on_outofbound")
+            return
         elif max_x < self.x:
             self.dispatch_event("on_outofbound")
+            return
         if self.y < min_y:
             self.dispatch_event("on_outofbound")
+            return
         elif max_y < self.y:
             self.dispatch_event("on_outofbound")
+            return
 
     def stop(self):
-        self._move = False
+        self._removed = True
+        self.dispatch_event("on_remove")
         self.velocity_x, self.velocity_y = 0, 0
         self.visible = False
         self.x, self.y = 0, 0
@@ -111,3 +159,4 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
 
 PhysicalObject.register_event_type("on_outofbound")
+PhysicalObject.register_event_type("on_remove")

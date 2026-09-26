@@ -20,7 +20,22 @@ class Ship(pyglet.sprite.Sprite):
         self.anchor_x = 128
         self.anchor_y = 129
         self._direction = Vec2(0, 0)
-        self._velocity = 90
+        self._velocity = 40 * 6
+        self.scale = 1 / 2
+        self._hitzone_offset = Vec2(
+            self.anchor_x * self.scale,
+            self.anchor_y * self.scale,
+        )
+        self._hitzone = pyglet.shapes.Ellipse(
+            self.x + self._hitzone_offset.x,
+            self.y + self._hitzone_offset.y,
+            75 * self.scale,
+            98 * self.scale,
+            color=colors()["red"],
+            batch=kwargs["batch"],
+            group=pyglet.graphics.Group(order=5),
+        )
+        self._hitzone.opacity = 128
 
     def set_direction(self, vector):
         self._direction = vector.normalize()
@@ -28,6 +43,11 @@ class Ship(pyglet.sprite.Sprite):
     def update(self, dt):
         new_pos = Vec2(self.x, self.y) + self._direction * self._velocity * dt
         self.x, self.y = new_pos
+        self._hitzone.position = new_pos + self._hitzone_offset
+
+    def draw(self):
+        super().draw()
+        self._hitzone.draw()
 
 
 class PlayArea(pyglet.event.EventDispatcher):
@@ -89,8 +109,9 @@ class PlayArea(pyglet.event.EventDispatcher):
         pew_pew()
 
     def _check_collision(self):
-        if self._spawner.do_collide(Vec2(self._ship.x, self._ship.y), "laser"):
-            exit(0)
+        if laser := self._spawner.do_collide(self._ship._hitzone, "laser"):
+            laser.stop()
+            self.dispatch_event("on_hit")
 
     def draw(self):
         self._drawing_batch.draw()
@@ -106,3 +127,6 @@ class PlayArea(pyglet.event.EventDispatcher):
 
     def set_direction(self, vector):
         self._ship.set_direction(vector)
+
+
+PlayArea.register_event_type("on_hit")

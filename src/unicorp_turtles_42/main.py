@@ -20,10 +20,11 @@ class MainWindow(pyglet.window.Window):
 
         self._decorate()
         self.set_exclusive_mouse()
-        self.set_fullscreen()
+        # self.set_fullscreen()
 
-        input_manager = InputManager()
-        input_manager
+        if False:
+            input_manager = InputManager()
+            input_manager
 
         self._play_area = PlayArea(self)
         self._gui = GUI(self)
@@ -34,6 +35,8 @@ class MainWindow(pyglet.window.Window):
             "LEFT": key.A,
             "RIGHT": key.D,
         }
+
+        self._play_area.push_handlers(self.on_hit)
 
         self.set_visible()
 
@@ -73,6 +76,9 @@ class MainWindow(pyglet.window.Window):
         self.clear()
         self._play_area.draw()
         self._gui.draw()
+
+    def on_hit(self):
+        print("got hit")
 
 
 def run():
