@@ -78,6 +78,7 @@ class MainWindow(pyglet.window.Window):
         self._gui.draw()
 
     def on_hit(self):
+        self._gui.hit_count += 1
         print("got hit")
 
 

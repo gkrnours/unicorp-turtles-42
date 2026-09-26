@@ -27,7 +27,7 @@ def box(repeat, screen, *, batch, group, corner=None):
     ]
     delta = images_repeat[0][0].width
     origin_repeat = Vec2(0, screen.height - images_repeat[0][0].height)
-    origin_end = Vec2(delta * repeat, screen.height - images_repeat[0][0].height)
+    origin_end = Vec2(delta * (repeat - 1), screen.height - images_repeat[0][0].height)
     if corner == TOP_RIGHT:
         origin_repeat = Vec2(
             screen.width - delta * (repeat - 1),
@@ -72,18 +72,32 @@ class GUI(pyglet.event.EventDispatcher):
         self.width = screen.width
         self.height = screen.height
 
+        self._hit_count = 0
+
         self._drawing_batch = None
-        self._layers = None
+        self._parts = None
         self._sprites = None
         self._fps = None
+        self._hit = None
 
         self._build()
+
+    @property
+    def hit_count(self):
+        return self._hit_count
+
+    @hit_count.setter
+    def hit_count(self, value):
+        self._hit_count = value
+        self._hit.text = str(value)
 
     def _build(self):
         self._drawing_batch = batch = pyglet.graphics.Batch()
         group = pyglet.graphics.Group(order=100)
 
-        self._layers = box(1, self._screen, corner=TOP_RIGHT, batch=batch, group=group)
+        self._parts = []
+        self._parts += box(1, self._screen, corner=TOP_RIGHT, batch=batch, group=group)
+        self._parts += box(1, self._screen, corner=TOP_LEFT, batch=batch, group=group)
 
         self._fps = pyglet.window.FPSDisplay(self._screen)
         self._fps.label.anchor_x = "right"
@@ -92,9 +106,23 @@ class GUI(pyglet.event.EventDispatcher):
         self._fps.label.y = self.height
         self._fps.label.color = colors()["lilac"]
 
+        self._hit = pyglet.text.Label(
+            text="0",
+            x=90,
+            anchor_x="right",
+            y=self._screen.height,
+            anchor_y="top",
+            align="right",
+            **{
+                key: getattr(self._fps.label, key)
+                for key in "font_name font_size color weight".split()
+            },
+        )
+
     def draw(self):
         self._drawing_batch.draw()
         self._fps.draw()
+        self._hit.draw()
 
     def update(self, dt):
         pass
