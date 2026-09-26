@@ -1,5 +1,9 @@
+from random import random
+
 import pyglet
 from pyglet.math import Vec2
+
+from unicorp_turtles_42.loader import colors
 
 DEFAULT_SPEED = 6
 
@@ -8,7 +12,7 @@ class BadPaternException(Exception): ...
 
 
 class Boss(pyglet.sprite.Sprite):
-    def __init__(self, img, x, y, *args, screen, **kwargs):
+    def __init__(self, img, x, y, *args, screen, spawner, **kwargs):
         x = screen.width / 2 - img.width / 2
         y = screen.height * 4 / 5
 
@@ -16,12 +20,19 @@ class Boss(pyglet.sprite.Sprite):
         self.scale = 1 / 2
 
         self._screen = screen
+        self._spawner = spawner
         self._base_y = y
+        self._speed = 6
+        self._max_laser_speed = 3
         self._pattern_pointer = 0
         self._pattern = [
+            "SHOOT 1 / 5",
             "GOTO -90",
+            "SHOOT 1 / 2",
             "GOTO 50% 10",
+            "SHOOT 1 / 5",
             "GOTO 90",
+            "SHOOT 1 / 1",
             "GOTO 50% 10",
         ]
 
@@ -33,14 +44,26 @@ class Boss(pyglet.sprite.Sprite):
         # move is a fraction of the direction based on the direction, speed and dt
         move = direction.normalize() * dt * 40 * self._speed
         # if we are close enough to destination, next part of the pattern
-        if direction.length_squared() < move.length_squared():
+        if direction.length_squared() <= move.length_squared():
             self._pattern_pointer = (self._pattern_pointer + 1) % len(self._pattern)
             return
         self.x += move.x
         self.y += move.y
 
+    def _pew_pew(self, dt):
+        src = Vec2(self.x, self.y)
+        tgt = Vec2(self.x, self.y - 1)
+        speed = 2 + random() * self._max_laser_speed
+        self._spawner.laser(src, tgt, speed=speed, color="lime")
+
     def read_pattern(self, pattern):
         match pattern.split():
+            case ("SHOOT", a, "/", b):
+                self._set_shoot_freq(int(a) / int(b))
+                return Vec2(self.x, self.y)
+            case ("SHOOT", "0"):
+                self._set_shoot_freq(0)
+                return Vec2(self.x, self.y)
             case ("GOTO", x):
                 return self._read_goto(x, DEFAULT_SPEED)
             case ("GOTO", x, speed):
@@ -59,3 +82,8 @@ class Boss(pyglet.sprite.Sprite):
             return Vec2(x, self._base_y)
 
         return Vec2(int(x), self._base_y)
+
+    def _set_shoot_freq(self, freq):
+        pyglet.clock.unschedule(self._pew_pew)
+        if freq:
+            pyglet.clock.schedule_interval(self._pew_pew, freq)

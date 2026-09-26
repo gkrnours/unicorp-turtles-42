@@ -101,10 +101,12 @@ class PlayArea(pyglet.event.EventDispatcher):
             x=0,
             y=0,
             screen=self,
+            spawner=self._spawner,
             batch=batch,
             group=ship_group,
         )
 
+        """
         laser_source_circle_config = {
             "radius": 5,
             "color": colors()["white"],
@@ -133,6 +135,7 @@ class PlayArea(pyglet.event.EventDispatcher):
 
         pyglet.clock.schedule_interval(do_pew_pew, self._laser_cooldown)
         pew_pew()
+        """
 
     def _check_collision(self):
         if laser := self._spawner.do_collide(self._ship, "laser:other"):
