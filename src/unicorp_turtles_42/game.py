@@ -20,9 +20,25 @@ class Ship(pyglet.sprite.Sprite):
         )
         self.anchor_x = 128
         self.anchor_y = 129
+        self.scale = 1 / 2
         self._direction = Vec2(0, 0)
         self._velocity = 40 * 6
-        self.scale = 1 / 2
+        self._clone_count = 0
+
+        self._clone_offset = [
+            Vec2(120, -45),
+            Vec2(-120, -45),
+            Vec2(80, -145),
+            Vec2(-80, -145),
+        ]
+        self._clones = []
+        for i in self._clone_offset:
+            s = pyglet.sprite.Sprite(*args, img=img, x=0, y=0, **kwargs)
+            s.anchor_x = self.anchor_x
+            s.anchor_y = self.anchor_y
+            s.scale = self.scale
+            s.opacity = 0
+            self._clones.append(s)
 
         self._hitzone_offset = Vec2(
             self.anchor_x * self.scale,
@@ -60,10 +76,29 @@ class Ship(pyglet.sprite.Sprite):
         target = source + Vec2(0, 10)
         self._spawner.laser(source, target, color="pink", speed=10, tag="me")
 
+    def invoke(self):
+        if len(self._clone_offset) <= self._clone_count:
+            return
+        self._clone_count += 1
+        self._reset_clone_opacity()
+
+    def revoke(self):
+        if self._clone_count <= 0:
+            return
+        self._clone_count -= 1
+        self._reset_clone_opacity()
+
+    def _reset_clone_opacity(self):
+        for i, c in enumerate(self._clones):
+            c.opacity = 0x70 if i + 1 <= self._clone_count else 0
+
     def update(self, dt):
         new_pos = Vec2(self.x, self.y) + self._direction * self._velocity * dt
         self.x, self.y = new_pos
         self.hitzone.position = new_pos + self._hitzone_offset
+        for c, o in zip(self._clones, self._clone_offset):
+            c.x = self.x + o.x
+            c.y = self.y + o.y
 
 
 class PlayArea(pyglet.event.EventDispatcher):
@@ -163,6 +198,12 @@ class PlayArea(pyglet.event.EventDispatcher):
 
     def stop_firing(self):
         self._ship.stop_firing()
+
+    def invoke(self):
+        self._ship.invoke()
+
+    def revoke(self):
+        self._ship.revoke()
 
 
 PlayArea.register_event_type("on_hit")

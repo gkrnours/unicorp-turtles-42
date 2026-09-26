@@ -15,6 +15,8 @@ CONFIG_DEFAULT = {
     "LEFT": ["A", "LEFT"],
     "RIGHT": ["D", "RIGHT"],
     "FIRE": ["SPACE"],
+    "INVOKE": ["E"],
+    "REVOKE": ["Q"],
 }
 
 MOVE_DELTAS = [
@@ -81,6 +83,10 @@ class MainWindow(pyglet.window.Window):
                 self._dvec += delta
         if symbol in self._keys["FIRE"]:
             self._play_area.start_firing()
+        if symbol in self._keys["INVOKE"]:
+            self._play_area.invoke()
+        if symbol in self._keys["REVOKE"]:
+            self._play_area.revoke()
         self._play_area.set_direction(self._dvec)
 
     def on_key_release(self, symbol, modifiers):
