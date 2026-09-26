@@ -6,6 +6,14 @@ from unicorp_turtles_42.gui import GUI
 from unicorp_turtles_42.input import InputManager
 from unicorp_turtles_42.loader import loader
 
+INPUT_CONFIG = {
+    "UP": [key.W, key.UP],
+    "DOWN": [key.S, key.DOWN],
+    "LEFT": [key.A, key.LEFT],
+    "RIGHT": [key.D, key.RIGHT],
+    "FIRE": [key.SPACE],
+}
+
 MOVE_DELTAS = [
     ("UP", pyglet.math.Vec2(0, 1)),
     ("DOWN", pyglet.math.Vec2(0, -1)),
@@ -29,13 +37,7 @@ class MainWindow(pyglet.window.Window):
         self._play_area = PlayArea(self)
         self._gui = GUI(self)
         self._dvec = pyglet.math.Vec2(0, 0)
-        self._keys = {
-            "UP": [key.W, key.UP],
-            "DOWN": [key.S, key.DOWN],
-            "LEFT": [key.A, key.LEFT],
-            "RIGHT": [key.D, key.RIGHT],
-            "FIRE": [key.SPACE],
-        }
+        self._keys = INPUT_CONFIG
 
         self._play_area.push_handlers(self.on_hit)
         self._media = pyglet.media.Player()
